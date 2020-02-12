@@ -47,4 +47,15 @@ public class DbHandler extends SQLiteOpenHelper {
         long newRowId = db.insert(TABLE_Users,null, cValues);
         db.close();
     }
+
+    void deleteLog(long rowID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_Users,"KEY_ID=" + rowID, null);
+        db.close();
+    }
+
+    Cursor selectsLog() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.rawQuery("select * from " + TABLE_Users, new String[]{});
+    }
 }

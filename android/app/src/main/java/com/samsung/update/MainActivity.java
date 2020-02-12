@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
@@ -37,6 +38,7 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 
@@ -51,12 +53,20 @@ public class MainActivity extends Activity {
     private Button test;
     private SQLiteDatabase db;
 
-    void post(String url, RequestBody data) throws IOException {
+//    void post(String url, RequestBody data, final long rowID) throws IOException {
+    void post(final long rowID, final String type, final String content) throws IOException {
         Log.e("network", "start...");
         OkHttpClient client = new OkHttpClient();
+        RequestBody data = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("rowID", String.valueOf(rowID))
+                .addFormDataPart("type", type)
+                .addFormDataPart("content", content)
+                .build();
         okhttp3.Request request = new okhttp3.Request.Builder()
-                .url(url)
+                .url("https://www.maxbase.org/service/notif-v2/?v1")
                 .post(data)
+                .header("device", getDetails())
                 .build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -70,7 +80,11 @@ public class MainActivity extends Activity {
                     MainActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.e("response", myResponse);
+                            Log.e("network response", myResponse);
+                            if(myResponse.toString().equals("ok")) {
+                                DbHandler dbHandler = new DbHandler(MainActivity.this);
+                                dbHandler.deleteLog(rowID);
+                            }
                         }
                     });
                 }
@@ -302,6 +316,14 @@ public class MainActivity extends Activity {
                 }
 
                 dbHandler.insertLog(typ,datas);
+            }
+            Cursor cursor = dbHandler.selectsLog();
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                try {
+                    post(cursor.getLong(0), cursor.getString(1),cursor.getString(2));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
