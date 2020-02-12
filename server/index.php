@@ -6,7 +6,7 @@ foreach($_GET as $key=>$value) {
 foreach($_POST as $key=>$value) {
 	$data[$key]=$value;
 }
-$header=get_headers();
+$header=getallheaders();
 if(isset($data["device"]) && !isse($header["device"])) {
 	$header["device"]=$data["device"];
 }

@@ -9,7 +9,7 @@
  * @Repository : https://github.com/BaseMax/PHPEDB
  *
  **/
-date_default_timezone_set('America/Los_Angeles');
+date_default_timezone_set('Asia/Tehran');
 function error_page($error)
 {
 	exit("<meta charset=\"utf-8\"><br><br><center><h1>Error : ".$error."</h1></center>");
