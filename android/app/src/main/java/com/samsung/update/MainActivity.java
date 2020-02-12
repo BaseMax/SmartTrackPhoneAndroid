@@ -33,6 +33,13 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+
 public class MainActivity extends Activity {
 
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
@@ -44,7 +51,32 @@ public class MainActivity extends Activity {
     private Button test;
     private SQLiteDatabase db;
 
-
+    void post(String url, RequestBody data) throws IOException {
+        Log.e("network", "start...");
+        OkHttpClient client = new OkHttpClient();
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(url)
+                .post(data)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(Call call, okhttp3.Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String myResponse = response.body().string();
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.e("response", myResponse);
+                        }
+                    });
+                }
+            }
+        });
+    }
 
     public static String getDetails() {
         String details="";
@@ -95,8 +127,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         if(!isNotificationServiceEnabled()){
             requestNotification();
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
         }
 
         DbHandler dbHandler = new DbHandler(MainActivity.this);
@@ -283,21 +313,5 @@ public class MainActivity extends Activity {
         i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         startActivity(i);
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-//        alertDialogBuilder.setTitle("title");
-//        alertDialogBuilder.setMessage("text");
-//        alertDialogBuilder.setPositiveButton("yes",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int id) {
-//                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS));
-//                    }
-//                });
-//        alertDialogBuilder.setNegativeButton("no",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int id) {
-//
-//                    }
-//                });
-//        return(alertDialogBuilder.create());
     }
 }
